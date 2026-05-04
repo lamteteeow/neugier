@@ -1,7 +1,9 @@
 mod forward;
 use forward::Dual;
 mod reverse;
-use reverse::Graph;
+use reverse::{Graph, Var};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 fn func1(x: Dual) -> Dual {
     let two = Dual(2.0, 0.0);
@@ -50,37 +52,53 @@ fn main() {
 
     //reverse
 
-    let mut graph1 = Graph::new();
+    // let mut graph1 = Graph::new();
 
-    let xg1 = graph1.add_node(std::f32::consts::FRAC_PI_2);
-    let yg1 = graph1.add_node(2.);
+    // let xg1 = graph1.add_node(std::f32::consts::FRAC_PI_2);
+    // let yg1 = graph1.add_node(2.);
 
-    let sin_x = graph1.sin(xg1);
-    let exp_y = graph1.exp(yg1);
+    // let sin_x = graph1.sin(xg1);
+    // let exp_y = graph1.exp(yg1);
 
-    let target1 = graph1.mul(sin_x, exp_y);
+    // let target1 = graph1.mul(sin_x, exp_y);
 
-    graph1.backward(target1);
+    // graph1.backward(target1);
 
-    println!("f(pi/2, 2): {:.4}", graph1.nodes[target1].f);
-    println!("df(pi/2,2)/dx = {:.4}", graph1.nodes[xg1].df);
-    println!("df(pi/2,2)/dy = {:.4}", graph1.nodes[yg1].df);
+    // println!("f(pi/2, 2): {:.4}", graph1.nodes[target1].f);
+    // println!("df(pi/2,2)/dx = {:.4}", graph1.nodes[xg1].df);
+    // println!("df(pi/2,2)/dy = {:.4}", graph1.nodes[yg1].df);
 
-    let mut graph2 = Graph::new();
+    // let mut graph2 = Graph::new();
 
-    let xg2 = graph2.add_node(1.);
-    let yg2 = graph2.add_node(2.);
+    // let xg2 = graph2.add_node(1.);
+    // let yg2 = graph2.add_node(2.);
 
-    let quo = graph2.div(xg2, yg2);
-    let exp_y = graph2.exp(yg2);
-    let sin_quo = graph2.sin(quo);
-    let right = graph2.sub(quo, exp_y);
-    let left = graph2.add(sin_quo, right);
-    let target2 = graph2.mul(left, right);
+    // let quo = graph2.div(xg2, yg2);
+    // let exp_y = graph2.exp(yg2);
+    // let sin_quo = graph2.sin(quo);
+    // let right = graph2.sub(quo, exp_y);
+    // let left = graph2.add(sin_quo, right);
+    // let target2 = graph2.mul(left, right);
 
-    graph2.backward(target2);
+    // graph2.backward(target2);
 
-    println!("f(pi/2, 2): {:.4}", graph2.nodes[target2].f);
-    println!("df(pi/2,2)/dx = {:.4}", graph2.nodes[xg2].df);
-    println!("df(pi/2,2)/dy = {:.4}", graph2.nodes[yg2].df);
+    // println!("f(1, 2): {:.4}", graph2.nodes[target2].f);
+    // println!("df(1,2)/dx = {:.4}", graph2.nodes[xg2].df);
+    // println!("df(1,2)/dy = {:.4}", graph2.nodes[yg2].df);
+
+    // reverse with Var
+    let graph3 = Rc::new(RefCell::new(Graph::new()));
+
+    let x = Var::new(&graph3, 1.);
+    let y = Var::new(&graph3, 2.);
+
+    let quo = &x / &y;
+    let right = &quo - &y.exp();
+    let target3 = &(&quo.sin() + &right) * &right;
+
+    target3.backward();
+
+    println!("f(1, 2): {:.4}", target3.f());
+    println!("df(1,2)/dx = {:.4}", x.df());
+    println!("df(1,2)/dy = {:.4}", y.df());
 }
