@@ -1,7 +1,7 @@
-mod forward;
-use forward::Dual;
-mod reverse;
-use reverse::{Graph, Var};
+use autodiff::forward::Dual;
+use autodiff::reverse::{Graph, Var};
+use quaternion::quaternion::Quaternion;
+use quaternion::vec3::Vec3;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -101,4 +101,36 @@ fn main() {
     println!("f(1, 2): {:.4}", target3.f());
     println!("df(1,2)/dx = {:.4}", x.df());
     println!("df(1,2)/dy = {:.4}", y.df());
+
+    // --- Quaternion Tests ---
+    println!("\n--- Quaternion Tests ---");
+    let q1 = Quaternion(1.0, 2.0, 3.0, 4.0);
+    let q2 = Quaternion(0.0, 1.0, 0.0, 0.0);
+
+    let q3 = q1 + q2;
+    println!("q1 + q2 = {:?}", q3);
+
+    match q1.normalize() {
+        Some(uq) => println!("Normalized q1: {:?}", uq.inner()),
+        None => println!("q1 magnitude was close to or was 0!"),
+    }
+
+    // Let's do a real 3D rotation test!
+    // We want to rotate the vector (1, 0, 0) by 90 degrees around the Z axis.
+    let angle: f32 = std::f32::consts::FRAC_PI_2; // 90 degrees
+    let w = (angle / 2.0).cos();
+    let z = (angle / 2.0).sin();
+
+    // Create the quaternion representing the rotation
+    let rot_q = Quaternion(w, 0.0, 0.0, z);
+
+    // The Typestate Pattern forces us to normalize it before rotating!
+    let unit_rot = rot_q.normalize().unwrap();
+
+    let v = Vec3(1.0, 0.0, 0.0);
+    let v_rotated = v.rotate(unit_rot);
+
+    println!("Original Vector: {:?}", v);
+    // Should be roughly (0, 1, 0)
+    println!("Rotated 90 degrees around Z-axis: {:?}", v_rotated);
 }

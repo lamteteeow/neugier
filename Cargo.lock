@@ -5,3 +5,15 @@ version = 4
 [[package]]
 name = "autodiff"
 version = "0.1.0"
+
+[[package]]
+name = "playground"
+version = "0.1.0"
+dependencies = [
+ "autodiff",
+ "quaternion",
+]
+
+[[package]]
+name = "quaternion"
+version = "0.1.0"
